@@ -1,3 +1,10 @@
+[project]
+name = "email-support-openenv"
+version = "0.1.0"
+description = "Email Support OpenEnv"
+readme = "README.md"
+requires-python = ">=3.8"
+
 [tool.openenv]
 entry_point = "app:app"
 environment = "env:EmailEnv"
