@@ -1,0 +1,25 @@
+name: email-support-env
+version: 1.0
+description: AI environment for email triage and routing
+
+entry_point: app:app
+
+tasks:
+  - id: easy
+    description: Simple email classification
+  - id: medium
+    description: Multiple emails with mixed intent
+  - id: hard
+    description: Complex emails with overlapping issues
+
+action_space:
+  type: discrete
+  actions: ["billing", "tech"]
+
+observation_space:
+  type: object
+  properties:
+    email:
+      type: string
+    urgency:
+      type: string
