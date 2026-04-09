@@ -1,2 +1,3 @@
 [tool.openenv]
 entrypoint = "app:app"
+environment = "env:EmailEnv"
