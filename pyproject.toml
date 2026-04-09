@@ -1,13 +1,2 @@
-[project]
-name = "email-support-openenv"
-version = "0.1.0"
-description = "OpenEnv email support environment"
-authors = [{ name = "Navya" }]
-dependencies = [
-    "fastapi",
-    "uvicorn",
-    "requests"
-]
-
 [tool.openenv]
-entry_point = "app:app"
+entrypoint = "app:app"
