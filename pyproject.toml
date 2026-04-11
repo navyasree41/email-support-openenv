@@ -1,7 +1,6 @@
 [project]
-name = "email-support-openenv"
+name = "email-support-env"
 version = "0.1.0"
-description = "Email Support OpenEnv"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi",
@@ -10,8 +9,4 @@ dependencies = [
 ]
 
 [project.scripts]
-server = "server.app:app"
-
-[tool.openenv]
-entry_point = "server.app:app"
-environment = "server.env:EmailEnv"
+start = "server.app:app"
