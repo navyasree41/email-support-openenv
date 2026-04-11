@@ -1,31 +1,42 @@
 class EmailEnv:
     def __init__(self):
-        self.data = []
-        self.index = 0
-
-    def reset(self):
-        self.data = [
+        self.emails = [
             {"email": "I want refund", "label": "billing"},
+            {"email": "Payment failed", "label": "billing"},
             {"email": "App not working", "label": "tech"},
-            {"email": "Payment failed", "label": "billing"}
+            {"email": "Login issue", "label": "tech"}
         ]
         self.index = 0
-        return self.data[self.index]
+        self.current = None
+
+    def reset(self):
+        self.index = 0
+        self.current = self.emails[self.index]
+        return self.current
 
     def step(self, action):
-        if self.index >= len(self.data):
-            return {}, 0.0, True, {}
+        # get correct label
+        correct_label = self.current["label"]
 
-        correct = self.data[self.index]["label"]
+        # reward logic (FIXED)
+        if action == correct_label:
+            reward = 1.0
+        else:
+            reward = 0.0
 
-        reward = 1.0 if action == correct else 0.0
-
+        # move to next email
         self.index += 1
 
-        if self.index >= len(self.data):
-            return {}, reward, True, {}
+        # check if done
+        if self.index >= len(self.emails):
+            done = True
+            observation = None
+        else:
+            done = False
+            self.current = self.emails[self.index]
+            observation = self.current
 
-        return self.data[self.index], reward, False, {}
-
+        return observation, reward, done, {}
+    
     def state(self):
-        return {"index": self.index}
+        return self.current
