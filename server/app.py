@@ -1,50 +1,33 @@
-from fastapi import FastAPI, Body
-from server.env import EmailEnv
+class EmailSupportEnv:
+    def __init__(self):
+        self.data = []
+        self.index = 0
 
-app = FastAPI()
+    def reset(self):
+        self.data = [
+            {"email": "I want refund", "label": "billing"},
+            {"email": "App not working", "label": "tech"},
+            {"email": "Payment failed", "label": "billing"}
+        ]
+        self.index = 0
+        return self.data[self.index]
 
-# Initialize environment
-env = EmailEnv()
+    def step(self, action):
+        # Safety check
+        if self.index >= len(self.data):
+            return {}, 0.0, True, {}
 
+        correct = self.data[self.index]["label"]
 
-# -------- HOME --------
-@app.get("/")
-def home():
-    return {"message": "Email Support OpenEnv is running"}
+        reward = 1.0 if action == correct else 0.0
 
+        self.index += 1
 
-# -------- RESET --------
-@app.post("/reset")
-def reset():
-    return env.reset()
+        done = self.index >= len(self.data)
 
+        observation = {} if done else self.data[self.index]
 
-# -------- STEP (FINAL SAFE VERSION) --------
-@app.post("/step")
-def step(data=Body(...)):
-    try:
-        print("Received:", data)  # debug log
+        return observation, reward, done, {}
 
-        # Accept both formats safely
-        if isinstance(data, dict):
-            action = data.get("action", "")
-        else:
-            action = str(data)
-
-        observation, reward, done, info = env.step(action)
-
-        return {
-            "observation": observation,
-            "reward": reward,
-            "done": done,
-            "info": info
-        }
-
-    except Exception as e:
-        return {"error": str(e)}
-
-
-# -------- STATE --------
-@app.get("/state")
-def state():
-    return env.state()
+    def state(self):
+        return {"index": self.index}
