@@ -1,33 +1,41 @@
-class EmailSupportEnv:
-    def __init__(self):
-        self.data = []
-        self.index = 0
+from fastapi import FastAPI, Request
+from env import EmailSupportEnv
 
-    def reset(self):
-        self.data = [
-            {"email": "I want refund", "label": "billing"},
-            {"email": "App not working", "label": "tech"},
-            {"email": "Payment failed", "label": "billing"}
-        ]
-        self.index = 0
-        return self.data[self.index]
+app = FastAPI()
+env = EmailSupportEnv()
 
-    def step(self, action):
-        # Safety check
-        if self.index >= len(self.data):
-            return {}, 0.0, True, {}
+@app.get("/")
+def home():
+    return {"status": "running"}
 
-        correct = self.data[self.index]["label"]
+@app.post("/step")
+async def step(request: Request):
+    # SAFE BODY PARSING (fixes NoneType crash)
+    try:
+        payload = await request.json()
+    except:
+        payload = {}
 
-        reward = 1.0 if action == correct else 0.0
+    # SAFETY: ensure dict
+    if payload is None:
+        payload = {}
 
-        self.index += 1
+    action = payload.get("action", "")
 
-        done = self.index >= len(self.data)
+    result = env.step(action)
 
-        observation = {} if done else self.data[self.index]
+    # FINAL SAFETY CHECK
+    if not result or len(result) != 4:
+        return {
+            "error": "Invalid env response",
+            "debug": str(result)
+        }
 
-        return observation, reward, done, {}
+    observation, reward, done, info = result
 
-    def state(self):
-        return {"index": self.index}
+    return {
+        "observation": observation,
+        "reward": reward,
+        "done": done,
+        "info": info
+    }
