@@ -1,52 +1,38 @@
-from fastapi import FastAPI, Request
-from env import EmailSupportEnv
+class EmailSupportEnv:
+    def __init__(self):
+        self.reset()
 
-app = FastAPI()
+    def reset(self):
+        self.data = [
+            {"email": "I want refund", "label": "billing"},
+            {"email": "App not working", "label": "tech"},
+            {"email": "Payment failed", "label": "billing"}
+        ]
+        self.index = 0
+        return self.data[0]
 
-# initialize environment
-env = EmailSupportEnv()
+    def step(self, action):
+        # safety: ensure string input
+        if action is None:
+            action = ""
+        if not isinstance(action, str):
+            action = str(action)
 
+        # reset if index out of range
+        if self.index >= len(self.data):
+            self.reset()
 
-@app.get("/")
-def home():
-    return {"status": "Email Support OpenEnv running"}
+        current = self.data[self.index]
+        correct = current["label"]
 
+        reward = 1.0 if action == correct else 0.0
 
-@app.post("/reset")
-def reset():
-    return env.reset()
+        self.index += 1
+        done = self.index >= len(self.data)
 
+        observation = self.data[self.index] if not done else current
 
-@app.post("/step")
-async def step(request: Request):
-    """
-    SAFE VERSION:
-    - prevents None payload crash
-    - handles invalid JSON
-    - ensures action always exists
-    """
+        return observation, reward, done, {}
 
-    # Default safe payload
-    payload = {}
-
-    try:
-        payload = await request.json()
-        if payload is None:
-            payload = {}
-    except Exception:
-        payload = {}
-
-    # Extract action safely
-    action = payload.get("action", "")
-    if action is None:
-        action = ""
-
-    # Call environment safely
-    observation, reward, done, info = env.step(action)
-
-    return {
-        "observation": observation,
-        "reward": reward,
-        "done": done,
-        "info": info
-    }
+    def state(self):
+        return {"index": self.index}

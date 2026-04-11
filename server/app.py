@@ -1,24 +1,51 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+import sys
+import os
+
+# ensure root path is accessible (fix HF import issues)
+sys.path.append(os.path.abspath("."))
+
 from env import EmailSupportEnv
 
 app = FastAPI()
+
 env = EmailSupportEnv()
+
 
 @app.get("/")
 def home():
-    return {"status": "running"}
+    return {"status": "Email Support OpenEnv running"}
+
+
+@app.post("/reset")
+def reset():
+    return env.reset()
+
 
 @app.post("/step")
-def step(payload: dict = None):
-    if not payload:
+async def step(request: Request):
+    """
+    Safe HF-compatible endpoint:
+    - prevents None payload crashes
+    - ensures JSON safety
+    """
+
+    try:
+        payload = await request.json()
+    except:
+        payload = {}
+
+    if not isinstance(payload, dict):
         payload = {}
 
     action = payload.get("action", "")
+    if action is None:
+        action = ""
 
-    obs, reward, done, info = env.step(action)
+    observation, reward, done, info = env.step(action)
 
     return {
-        "observation": obs,
+        "observation": observation,
         "reward": reward,
         "done": done,
         "info": info
