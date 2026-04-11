@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Body
-from env import EmailEnv
+from server.env import EmailEnv
 
 app = FastAPI()
 
