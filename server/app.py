@@ -9,9 +9,17 @@ def home():
     return {"status": "running"}
 
 @app.post("/step")
-def step(payload: dict):
+def step(payload: dict = None):
+    if not payload:
+        payload = {}
+
     action = payload.get("action", "")
-    return dict(zip(
-        ["observation", "reward", "done", "info"],
-        env.step(action)
-    ))
+
+    obs, reward, done, info = env.step(action)
+
+    return {
+        "observation": obs,
+        "reward": reward,
+        "done": done,
+        "info": info
+    }
