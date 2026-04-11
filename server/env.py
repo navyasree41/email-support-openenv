@@ -12,13 +12,9 @@ class EmailSupportEnv:
         return self.data[0]
 
     def step(self, action):
-        # safety: ensure string input
-        if action is None:
-            action = ""
-        if not isinstance(action, str):
-            action = str(action)
+        if not self.data:
+            self.reset()
 
-        # reset if index out of range
         if self.index >= len(self.data):
             self.reset()
 
@@ -33,6 +29,3 @@ class EmailSupportEnv:
         observation = self.data[self.index] if not done else current
 
         return observation, reward, done, {}
-
-    def state(self):
-        return {"index": self.index}
